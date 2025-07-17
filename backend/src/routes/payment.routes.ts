@@ -6,7 +6,7 @@ import Stripe from 'stripe';
 
 const router = Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16'
+  apiVersion: '2023-08-16'
 });
 
 // Create payment intent for deposit
@@ -96,7 +96,7 @@ router.post('/webhook', async (req, res) => {
       sig || '',
       process.env.STRIPE_WEBHOOK_SECRET || ''
     );
-  } catch (err) {
+  } catch (err: any) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 

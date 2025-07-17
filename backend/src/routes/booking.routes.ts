@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Booking } from '../models/booking.model';
 import { sendBookingConfirmation } from '../services/email.service';
@@ -18,7 +18,7 @@ const validateBooking = [
 ];
 
 // Create a new booking
-router.post('/', validateBooking, async (req, res) => {
+router.post('/', validateBooking, async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -42,7 +42,7 @@ router.post('/', validateBooking, async (req, res) => {
 });
 
 // Get all bookings (admin only)
-router.get('/', async (req, res) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const bookings = await Booking.find().sort({ eventDate: 1 });
     res.json(bookings);
@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get a single booking
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking) {
@@ -65,7 +65,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update booking status (admin only)
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
     const booking = await Booking.findByIdAndUpdate(
