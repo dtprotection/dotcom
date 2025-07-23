@@ -31,14 +31,14 @@ export default function ServicesPage() {
                 description:
                   "Discreet and professional personal security services for individuals requiring enhanced safety measures.",
                 features: ["Risk assessment", "Transportation security", "On-site protection"],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/male_security_officer.jpg",
               },
               {
                 title: "Event Security",
                 description:
                   "Comprehensive security planning and execution for corporate, private, and public events of all sizes.",
                 features: ["Crowd management", "Entry control", "Emergency response"],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/bar_club_venue_security.jpeg",
               },
               {
                 title: "Risk Assessment & Mitigation",
@@ -49,7 +49,7 @@ export default function ServicesPage() {
                   "Strategic planning to mitigate risks effectively",
                   "Ongoing security consultation",
                 ],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/security_team_risk_assessment.webp",
               },
               {
                 title: "Corporate Security",
@@ -60,7 +60,7 @@ export default function ServicesPage() {
                   "Executive protection services",
                   "Ensuring a safe environment for employees and clients",
                 ],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/corporate_security.webp",
               },
               {
                 title: "Bar, Club, And Venue Security",
@@ -71,14 +71,14 @@ export default function ServicesPage() {
                   "De-escalating conflicts",
                   "Ensuring a safe experience for guests",
                 ],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/Bar, Club, Venue Security.jpeg",
               },
               {
                 title: "Asset Protection",
                 description:
                   "Comprehensive protection services for valuable assets including vehicles, equipment, and private property.",
                 features: ["24/7 surveillance monitoring", "Regular patrol services", "Active deterrence measures"],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/asset_protection.jpg",
               },
               {
                 title: "Transportation Security",
@@ -89,7 +89,7 @@ export default function ServicesPage() {
                   "Route planning and risk assessment",
                   "Trained professionals ensure safe travel with real-time risk assessment",
                 ],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/transportation_secrity.jpg",
               },
               {
                 title: "On-Site Protection",
@@ -100,7 +100,7 @@ export default function ServicesPage() {
                   "Venue security assessment",
                   "Ensuring personal safety at events, meetings, residences, or other venues",
                 ],
-                image: "/placeholder.svg?height=400&width=600",
+                image: "/close_protection.jpg",
               },
             ].map((service, index) => (
               <div

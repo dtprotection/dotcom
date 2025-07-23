@@ -16,8 +16,8 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/60 z-10" />
           <div className="relative h-[70vh] w-full">
             <Image
-              src="/placeholder.svg?height=1080&width=1920"
-              alt="Elegant background"
+              src="/security_closup.jpeg"
+              alt="Security closeup"
               fill
               className="object-cover"
               priority
