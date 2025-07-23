@@ -26,7 +26,7 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="relative h-[300px] w-full max-w-[500px] overflow-hidden rounded-lg shadow-xl lg:h-[400px]">
-              <Image src="/placeholder.svg?height=800&width=800" alt="Our team" fill className="object-cover" />
+              <Image src="/executive_protection.JPG" alt="Our team" fill className="object-cover" />
             </div>
           </div>
         </section>
