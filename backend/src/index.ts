@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { bookingRoutes } from './routes/booking.routes';
 import { paymentRoutes } from './routes/payment.routes';
+import { adminRoutes } from './routes/admin.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 // Load environment variables
@@ -33,11 +34,16 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling
 app.use(errorHandler);
 
 // Start server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-}); 
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+export { app }; 

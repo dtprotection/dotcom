@@ -1,0 +1,49 @@
+*Front End*
+Admin login
+Admins can login in to view and manage requests and payments.
+
+*Backend*
+Request Management
+Accessible via Admin login
+* Database to house client requests with the following fields:
+    * Request submitted (Date field)
+    * Accept/Decline
+    * Status:
+        * If Accepted
+            * Invoice sent
+            * Deposit pending
+            * Deposit received
+            * Final payment pending
+            * Final payment received 
+        * Else
+            * Declined
+    * Event Date - event cannot be less than 7days away
+
+Payment Processing
+Needs a way to send invoices and accept payments, a minimum of 25% deposit is required to have the event staffed. Remaining balance due at the end of the event.
+
+Clients should be able to make payments with either of  the following:
+* Credit/Debit Card
+* P2P payments
+    * CashApp
+    * PayPal
+    * Venmo
+    * Apple Pay
+    * Google Pay
+    * etc.
+* Cash
+
+
+Client may decide whether they track their request via text, email, or both, within the booking form
+
+Email Integration
+Admin and clients should receive notifications for the following reasons:
+* Booking Request made
+* Request has been accepted
+    * Client receives invoice for deposit; Admin receives notice that invoice has been sent
+    * If/when deposit has been payed both parties receive notice
+    * Final invoice sent as a reminder that remaining balance is due at the conclusion of the even
+On the admin side the status should automatically update in the database to reflect the appropriate stage
+
+SMS integration
+Same as email
