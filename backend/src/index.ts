@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { bookingRoutes } from './routes/booking.routes';
 import { paymentRoutes } from './routes/payment.routes';
+import { communicationRoutes } from './routes/communication.routes';
 import { adminRoutes } from './routes/admin.routes';
 import { errorHandler } from './middleware/error.middleware';
 
@@ -34,6 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/communication', communicationRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Error handling

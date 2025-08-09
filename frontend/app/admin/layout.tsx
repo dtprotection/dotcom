@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   Bell,
-  User
+  User,
+  MessageSquare
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -70,6 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Requests", href: "/admin/requests", icon: Users },
     { name: "Payments", href: "/admin/payments", icon: CreditCard },
+    { name: "Communication", href: "/admin/communication", icon: MessageSquare },
     { name: "Settings", href: "/admin/settings", icon: Settings },
   ]
 
