@@ -7,6 +7,7 @@ import { bookingRoutes } from './routes/booking.routes';
 import { paymentRoutes } from './routes/payment.routes';
 import { communicationRoutes } from './routes/communication.routes';
 import { adminRoutes } from './routes/admin.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 // Load environment variables
@@ -37,6 +38,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling
 app.use(errorHandler);
