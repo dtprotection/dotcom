@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Admin } from '../models/admin.model';
 import { Booking } from '../models/booking.model';
+import { Invoice } from '../models/invoice.model';
 import { authenticateToken, AuthRequest, requireAdmin } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -82,26 +83,26 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
     const pendingRequests = await Booking.countDocuments({ status: 'pending' });
     const approvedRequests = await Booking.countDocuments({ status: 'approved' });
     
-    // Calculate total revenue (simplified - you'll need to implement payment tracking)
+    // Calculate total revenue from payment data
     const approvedBookings = await Booking.find({ status: 'approved' });
     const totalRevenue = approvedBookings.reduce((sum, booking) => {
-      // This is a placeholder calculation - you'll need to implement actual payment tracking
-      return sum + (booking.numberOfGuards * 150); // Assuming $150 per guard
+      return sum + (booking.payment?.paidAmount || 0);
     }, 0);
 
     // Get recent requests
     const recentRequests = await Booking.find()
       .sort({ createdAt: -1 })
       .limit(10)
-      .select('clientName eventDate status numberOfGuards');
+      .select('clientName date status payment');
 
     // Format recent requests for dashboard
     const formattedRequests = recentRequests.map(booking => ({
       id: booking._id,
       clientName: booking.clientName,
-      eventDate: booking.eventDate,
+      date: booking.date,
       status: booking.status,
-      amount: booking.numberOfGuards * 150 // Placeholder calculation
+      amount: booking.payment?.totalAmount || 0,
+      paidAmount: booking.payment?.paidAmount || 0
     }));
 
     res.json({
@@ -229,6 +230,70 @@ router.patch('/change-password', authenticateToken, async (req: AuthRequest, res
   } catch (error) {
     console.error('Change password error:', error);
     res.status(500).json({ message: 'Failed to change password' });
+  }
+});
+
+// Get all bookings with payment info
+router.get('/bookings', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const bookings = await Booking.find()
+      .sort({ createdAt: -1 })
+      .select('clientName email serviceType date status payment communicationPreferences');
+    res.json({ bookings });
+  } catch (error) {
+    console.error('Bookings fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch bookings' });
+  }
+});
+
+// Get payments data
+router.get('/payments', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const bookings = await Booking.find()
+      .sort({ createdAt: -1 })
+      .select('clientName email payment date');
+    const payments = bookings.map(booking => ({
+      id: booking._id,
+      bookingId: booking._id,
+      clientName: booking.clientName,
+      email: booking.email,
+      totalAmount: booking.payment?.totalAmount || 0,
+      depositAmount: booking.payment?.depositAmount || 0,
+      paidAmount: booking.payment?.paidAmount || 0,
+      status: booking.payment?.status || 'pending',
+      method: booking.payment?.method || 'paypal',
+      dueDate: booking.date,
+      createdAt: booking.createdAt
+    }));
+    res.json({ payments });
+  } catch (error) {
+    console.error('Payments fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch payments' });
+  }
+});
+
+// Get invoices data
+router.get('/invoices', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const invoices = await Invoice.find()
+      .sort({ createdAt: -1 })
+      .populate('bookingId', 'clientName email');
+    const formattedInvoices = invoices.map(invoice => ({
+      id: invoice._id,
+      invoiceNumber: invoice.invoiceNumber,
+      bookingId: invoice.bookingId,
+      amount: invoice.amount,
+      depositAmount: invoice.depositAmount,
+      status: invoice.status,
+      dueDate: invoice.dueDate,
+      paidDate: invoice.paidDate,
+      paymentMethod: invoice.paymentMethod,
+      paypalInvoiceId: invoice.paypalInvoiceId
+    }));
+    res.json({ invoices: formattedInvoices });
+  } catch (error) {
+    console.error('Invoices fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch invoices' });
   }
 });
 
