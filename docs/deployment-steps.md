@@ -73,9 +73,9 @@ cd backend
 heroku create dt-protection-backend --team $teamName
 ```
 
-### **Step 3: Add SendGrid Add-on**
+### **Step 3: Add Mailgun Add-on**
 ```bash
-heroku addons:create sendgrid:starter
+heroku addons:create mailgun:starter
 ```
 
 ### **Step 4: Set Environment Variables**
@@ -84,9 +84,15 @@ heroku config:set MONGODB_URI="your_atlas_connection_string_from_step_1"
 heroku config:set PAYPAL_CLIENT_ID="your_paypal_client_id"
 heroku config:set PAYPAL_CLIENT_SECRET="your_paypal_client_secret"
 heroku config:set PAYPAL_MODE="sandbox"  # Change to "live" when ready
-heroku config:set JWT_SECRET="your_super_secure_jwt_secret_key_minimum_32_characters"
+heroku config:set JWT_SECRET="$(openssl rand -base64 48)"
 heroku config:set JWT_EXPIRES_IN="24h"
 heroku config:set NODE_ENV="production"
+heroku config:set EMAIL_PROVIDER="mailgun"
+heroku config:set EMAIL_FROM="noreply@your-mailgun-domain.com"
+heroku config:set EMAIL_FROM_NAME="DT Protection Services"
+
+# Note: MAILGUN_* variables are automatically set by the Mailgun add-on
+# You can verify with: heroku config | grep MAILGUN
 ```
 
 ### **Step 5: Verify Configuration**
@@ -187,8 +193,8 @@ heroku logs --tail
 ```
 
 ### **Step 4: Test Email Service**
-- SendGrid add-on should automatically work
-- Check SendGrid dashboard for delivery status
+- Mailgun add-on should automatically work
+- Check Mailgun dashboard for delivery status (control panel link in Heroku add-ons)
 
 ---
 
@@ -203,7 +209,17 @@ PAYPAL_MODE=live  # or sandbox for testing
 JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
 JWT_EXPIRES_IN=24h
 NODE_ENV=production
-# SENDGRID_API_KEY is auto-set by Heroku add-on
+EMAIL_PROVIDER=mailgun
+EMAIL_FROM=noreply@your-mailgun-domain.com
+EMAIL_FROM_NAME=DT Protection Services
+
+# Auto-set by Mailgun add-on:
+# MAILGUN_API_KEY
+# MAILGUN_DOMAIN
+# MAILGUN_SMTP_LOGIN
+# MAILGUN_SMTP_PASSWORD
+# MAILGUN_SMTP_PORT
+# MAILGUN_SMTP_SERVER
 ```
 
 ### **Frontend (Vercel):**
@@ -250,7 +266,7 @@ NEXT_PUBLIC_API_BASE_URL=https://your-heroku-app-name.herokuapp.com
 
 - **Start with sandbox mode** for PayPal (easier testing)
 - **Use Heroku logs** to debug any backend issues
-- **Test email delivery** with SendGrid dashboard
+- **Test email delivery** with Mailgun dashboard (access via Heroku add-ons)
 - **Monitor MongoDB Atlas** for connection issues
 - **Use team collaboration** features for easier management
 
@@ -289,7 +305,7 @@ heroku logs --tail
 - **MongoDB Atlas**: https://docs.atlas.mongodb.com/
 - **Vercel**: https://vercel.com/docs
 - **PayPal Developer**: https://developer.paypal.com/docs/
-- **SendGrid**: https://sendgrid.com/docs/
+- **Mailgun**: https://documentation.mailgun.com/
 
 ---
 

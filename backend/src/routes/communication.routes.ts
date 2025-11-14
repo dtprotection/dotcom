@@ -10,17 +10,17 @@ const router = Router();
 
 // Initialize services
 const emailService = new EmailService({
-  provider: (process.env.EMAIL_PROVIDER as 'sendgrid' | 'resend' | 'smtp') || 'smtp',
+  provider: (process.env.EMAIL_PROVIDER as 'sendgrid' | 'resend' | 'mailgun' | 'smtp') || 'mailgun',
   apiKey: process.env.EMAIL_API_KEY,
   fromEmail: process.env.EMAIL_FROM || 'admin@dtprotection.com',
   fromName: process.env.EMAIL_FROM_NAME || 'DT Protection Services',
-  smtpConfig: process.env.EMAIL_PROVIDER === 'smtp' ? {
-    host: process.env.SMTP_HOST || 'localhost',
-    port: parseInt(process.env.SMTP_PORT || '587'),
+  smtpConfig: (process.env.EMAIL_PROVIDER === 'smtp' || process.env.EMAIL_PROVIDER === 'mailgun' || !process.env.EMAIL_PROVIDER) ? {
+    host: process.env.MAILGUN_SMTP_SERVER || process.env.SMTP_HOST || 'smtp.mailgun.org',
+    port: parseInt(process.env.MAILGUN_SMTP_PORT || process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
-      user: process.env.SMTP_USER || '',
-      pass: process.env.SMTP_PASS || ''
+      user: process.env.MAILGUN_SMTP_LOGIN || process.env.SMTP_USER || '',
+      pass: process.env.MAILGUN_SMTP_PASSWORD || process.env.SMTP_PASS || ''
     }
   } : undefined
 });

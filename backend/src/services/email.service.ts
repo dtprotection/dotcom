@@ -3,7 +3,7 @@ import { Booking } from '../models/booking.model';
 import { Invoice } from '../models/invoice.model';
 
 export interface EmailConfig {
-  provider: 'sendgrid' | 'resend' | 'smtp';
+  provider: 'sendgrid' | 'resend' | 'mailgun' | 'smtp';
   apiKey?: string;
   fromEmail: string;
   fromName: string;
@@ -54,6 +54,17 @@ export class EmailService {
           auth: {
             user: 'apikey',
             pass: this.config.apiKey
+          }
+        });
+
+      case 'mailgun':
+        return nodemailer.createTransport({
+          host: this.config.smtpConfig?.host || 'smtp.mailgun.org',
+          port: this.config.smtpConfig?.port || 587,
+          secure: false,
+          auth: {
+            user: this.config.smtpConfig?.auth.user || '',
+            pass: this.config.smtpConfig?.auth.pass || ''
           }
         });
 
