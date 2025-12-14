@@ -58,7 +58,11 @@ router.post('/create-invoice', authenticateToken, requireAdmin, validateCreateIn
     const { bookingId, totalAmount, depositAmount, serviceType, date } = req.body;
 
     // Validate deposit amount
-    getPayPalService().validateDeposit({ totalAmount, depositAmount });
+    try {
+      getPayPalService().validateDeposit({ totalAmount, depositAmount });
+    } catch (paypalError: any) {
+      return res.status(503).json({ error: 'PayPal service is not available. Please configure PayPal credentials.' });
+    }
 
     // Get booking details
     const booking = await Booking.findById(bookingId);
@@ -67,7 +71,9 @@ router.post('/create-invoice', authenticateToken, requireAdmin, validateCreateIn
     }
 
     // Create PayPal invoice
-    const paypalInvoice = await getPayPalService().createInvoice({
+    let paypalInvoice;
+    try {
+      paypalInvoice = await getPayPalService().createInvoice({
       id: bookingId,
       clientName: booking.clientName,
       email: booking.email,
@@ -75,7 +81,10 @@ router.post('/create-invoice', authenticateToken, requireAdmin, validateCreateIn
       depositAmount,
       serviceType,
       date: new Date(date)
-    });
+      });
+    } catch (paypalError: any) {
+      return res.status(503).json({ error: 'PayPal service is not available. Please configure PayPal credentials.' });
+    }
 
     // Create local invoice record
     const invoice = new Invoice({
