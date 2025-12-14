@@ -7,9 +7,9 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "npm run build:frontend && npm run build:backend",
-    "build:backend": "tsc -p tsconfig.backend.json || true",
+    "build:backend": "tsc -p tsconfig.backend.json --noEmitOnError false || echo 'TypeScript compilation had errors but continuing...'",
     "build:frontend": "cd frontend && next build",
-    "start": "node dist/server.js",
+    "start": "node dist/server.js || ts-node server.ts",
     "start:dev": "ts-node server.ts",
     "lint": "cd frontend && next lint",
     "create-admin": "ts-node backend/src/scripts/create-admin.ts"
