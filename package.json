@@ -9,7 +9,7 @@
     "build": "npm run build:frontend && npm run build:backend",
     "build:backend": "tsc -p tsconfig.backend.json --skipLibCheck 2>&1 | grep -v 'error TS' || true",
     "build:frontend": "cd frontend && next build",
-    "start": "NODE_ENV=production ts-node --project tsconfig.server.json server.ts",
+    "start": "NODE_ENV=production ts-node --transpile-only --project tsconfig.server.json server.ts",
     "start:dev": "ts-node server.ts",
     "lint": "cd frontend && next lint",
     "create-admin": "ts-node backend/src/scripts/create-admin.ts"
