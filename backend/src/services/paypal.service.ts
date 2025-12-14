@@ -1,4 +1,10 @@
-import paypal from '@paypal/paypal-server-sdk';
+let paypal: any;
+try {
+  paypal = require('@paypal/paypal-server-sdk');
+} catch (error) {
+  console.warn('PayPal SDK not available:', error);
+  paypal = null;
+}
 import { Invoice } from '../models/invoice.model';
 import { Booking } from '../models/booking.model';
 
@@ -33,9 +39,13 @@ interface WebhookResult {
 }
 
 export class PayPalService {
-  private client: paypal.core.PayPalHttpClient;
+  private client: any;
 
   constructor(config: PayPalConfig) {
+    if (!paypal || !paypal.core) {
+      throw new Error('PayPal SDK is not properly installed or configured');
+    }
+    
     const environment = config.environment === 'live' 
       ? new paypal.core.LiveEnvironment(config.clientId, config.clientSecret)
       : new paypal.core.SandboxEnvironment(config.clientId, config.clientSecret);
