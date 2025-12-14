@@ -21,7 +21,9 @@
     "strictBindCallApply": false,
     "strictPropertyInitialization": false,
     "noImplicitThis": false,
-    "alwaysStrict": false
+    "alwaysStrict": false,
+    "noEmitOnError": false,
+    "skipLibCheck": true
   },
   "include": [
     "server.ts",
