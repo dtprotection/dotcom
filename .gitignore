@@ -16,6 +16,7 @@ tests/node_modules/
 dist/
 build/
 .next/
+frontend/.next/
 out/
 
 # Logs

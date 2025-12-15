@@ -7,12 +7,31 @@ import { authenticateToken, AuthRequest, requireAdmin } from '../middleware/auth
 
 const router = Router();
 
-// Initialize PayPal service
-const paypalService = new PayPalService({
-  clientId: process.env.PAYPAL_CLIENT_ID || '',
-  clientSecret: process.env.PAYPAL_CLIENT_SECRET || '',
-  environment: (process.env.PAYPAL_ENVIRONMENT as 'sandbox' | 'live') || 'sandbox'
-});
+// Initialize PayPal service lazily (only when needed)
+let paypalService: PayPalService | null = null;
+
+const getPayPalService = (): PayPalService => {
+  if (!paypalService) {
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    
+    if (!clientId || !clientSecret) {
+      throw new Error('PayPal credentials not configured. Please set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables.');
+    }
+    
+    try {
+      paypalService = new PayPalService({
+        clientId,
+        clientSecret,
+        environment: (process.env.PAYPAL_ENVIRONMENT as 'sandbox' | 'live') || 'sandbox'
+      });
+    } catch (error) {
+      console.error('Failed to initialize PayPal service:', error);
+      throw new Error('PayPal service initialization failed. Payment features will not be available.');
+    }
+  }
+  return paypalService;
+};
 
 // Validation middleware
 const validateCreateInvoice = [
@@ -39,7 +58,11 @@ router.post('/create-invoice', authenticateToken, requireAdmin, validateCreateIn
     const { bookingId, totalAmount, depositAmount, serviceType, date } = req.body;
 
     // Validate deposit amount
-    paypalService.validateDeposit({ totalAmount, depositAmount });
+    try {
+      getPayPalService().validateDeposit({ totalAmount, depositAmount });
+    } catch (paypalError: any) {
+      return res.status(503).json({ error: 'PayPal service is not available. Please configure PayPal credentials.' });
+    }
 
     // Get booking details
     const booking = await Booking.findById(bookingId);
@@ -48,7 +71,9 @@ router.post('/create-invoice', authenticateToken, requireAdmin, validateCreateIn
     }
 
     // Create PayPal invoice
-    const paypalInvoice = await paypalService.createInvoice({
+    let paypalInvoice;
+    try {
+      paypalInvoice = await getPayPalService().createInvoice({
       id: bookingId,
       clientName: booking.clientName,
       email: booking.email,
@@ -56,7 +81,10 @@ router.post('/create-invoice', authenticateToken, requireAdmin, validateCreateIn
       depositAmount,
       serviceType,
       date: new Date(date)
-    });
+      });
+    } catch (paypalError: any) {
+      return res.status(503).json({ error: 'PayPal service is not available. Please configure PayPal credentials.' });
+    }
 
     // Create local invoice record
     const invoice = new Invoice({
@@ -102,7 +130,7 @@ router.post('/send-invoice/:invoiceId', authenticateToken, requireAdmin, async (
     }
 
     // Send invoice via PayPal
-    await paypalService.sendInvoice(invoice.paypalInvoiceId);
+    await getPayPalService().sendInvoice(invoice.paypalInvoiceId);
 
     // Update local invoice status
     invoice.status = 'sent';
@@ -130,7 +158,7 @@ router.post('/webhook', validateWebhook, async (req: Request, res: Response) => 
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const webhookResult = await paypalService.processWebhook(req.body);
+    const webhookResult = await getPayPalService().processWebhook(req.body);
 
     // Handle different webhook events
     switch (webhookResult.type) {
@@ -167,7 +195,7 @@ router.post('/webhook', validateWebhook, async (req: Request, res: Response) => 
 router.get('/status/:paymentId', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { paymentId } = req.params;
-    const paymentResult = await paypalService.processPayment(paymentId);
+    const paymentResult = await getPayPalService().processPayment(paymentId);
     
     res.json({
       paymentId: paymentResult.paymentId,
@@ -193,7 +221,7 @@ router.get('/invoice/:invoiceId', authenticateToken, requireAdmin, async (req: A
     let paypalStatus = null;
     if (invoice.paypalInvoiceId) {
       try {
-        const paypalInvoice = await paypalService.getInvoiceStatus(invoice.paypalInvoiceId);
+        const paypalInvoice = await getPayPalService().getInvoiceStatus(invoice.paypalInvoiceId);
         paypalStatus = paypalInvoice.status;
       } catch (error) {
         console.error('PayPal invoice status error:', error);
