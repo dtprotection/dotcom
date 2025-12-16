@@ -65,6 +65,7 @@ export default function AdminCommunication() {
 
   useEffect(() => {
     fetchStats()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookings])
 
   const fetchBookings = async () => {

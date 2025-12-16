@@ -8,9 +8,9 @@ import {
   CreditCard, 
   MessageSquare, 
   Clock, 
-  CheckCircle,
   DollarSign,
-  Settings
+  Settings,
+  AlertCircle
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

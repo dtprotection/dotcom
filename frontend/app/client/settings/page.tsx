@@ -67,7 +67,7 @@ export default function ClientSettings() {
       } else {
         setError("Failed to load client data")
       }
-    } catch (error) {
+    } catch {
       setError("Network error")
     } finally {
       setIsLoading(false)
@@ -108,7 +108,7 @@ export default function ClientSettings() {
         const data = await response.json()
         setError(data.error || "Failed to update preferences")
       }
-    } catch (error) {
+    } catch {
       setError("Network error")
     } finally {
       setIsSaving(false)

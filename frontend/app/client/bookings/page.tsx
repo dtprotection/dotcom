@@ -59,10 +59,12 @@ export default function ClientBookings() {
     }
 
     fetchBookings(token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, currentPage])
 
   useEffect(() => {
     filterBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookings, searchTerm, statusFilter])
 
   const fetchBookings = async (token: string) => {

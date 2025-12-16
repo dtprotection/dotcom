@@ -11,7 +11,8 @@ import {
   AlertCircle,
   DollarSign,
   Calendar,
-  Eye
+  Eye,
+  Download
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -51,6 +52,7 @@ export default function ClientPayments() {
     }
 
     fetchInvoices(token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, currentPage])
 
   useEffect(() => {

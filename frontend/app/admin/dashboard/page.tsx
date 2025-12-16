@@ -14,7 +14,8 @@ import {
   FileText,
   Search,
   Download,
-  RefreshCw
+  RefreshCw,
+  TrendingUp
 } from 'lucide-react'
 
 interface DashboardStats {
