@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { Booking } from '../models/booking.model';
-import { Invoice } from '../models/invoice.model';
+import { Booking, IBooking } from '../models/booking.model';
+import { Invoice, IInvoice } from '../models/invoice.model';
 
 export interface EmailConfig {
   provider: 'sendgrid' | 'resend' | 'mailgun' | 'smtp';
@@ -110,7 +110,7 @@ export class EmailService {
     }
   }
 
-  async sendBookingConfirmation(booking: Booking): Promise<boolean> {
+  async sendBookingConfirmation(booking: IBooking): Promise<boolean> {
     const template = this.generateBookingConfirmationTemplate(booking);
     
     return this.sendEmail({
@@ -120,7 +120,7 @@ export class EmailService {
     });
   }
 
-  async sendPaymentReminder(booking: Booking, invoice?: Invoice): Promise<boolean> {
+  async sendPaymentReminder(booking: IBooking, invoice?: IInvoice): Promise<boolean> {
     const template = this.generatePaymentReminderTemplate(booking, invoice);
     
     return this.sendEmail({
@@ -130,7 +130,7 @@ export class EmailService {
     });
   }
 
-  async sendInvoiceNotification(booking: Booking, invoice: Invoice): Promise<boolean> {
+  async sendInvoiceNotification(booking: IBooking, invoice: IInvoice): Promise<boolean> {
     const template = this.generateInvoiceTemplate(booking, invoice);
     
     return this.sendEmail({
@@ -140,7 +140,7 @@ export class EmailService {
     });
   }
 
-  async sendStatusUpdate(booking: Booking, status: string): Promise<boolean> {
+  async sendStatusUpdate(booking: IBooking, status: string): Promise<boolean> {
     const template = this.generateStatusUpdateTemplate(booking, status);
     
     return this.sendEmail({
@@ -150,7 +150,7 @@ export class EmailService {
     });
   }
 
-  private generateBookingConfirmationTemplate(booking: Booking): EmailTemplate {
+  private generateBookingConfirmationTemplate(booking: IBooking): EmailTemplate {
     const subject = `Booking Confirmation - ${booking.serviceType}`;
     
     const html = `
@@ -237,7 +237,7 @@ export class EmailService {
     return { subject, html, text };
   }
 
-  private generatePaymentReminderTemplate(booking: Booking, invoice?: Invoice): EmailTemplate {
+  private generatePaymentReminderTemplate(booking: IBooking, invoice?: IInvoice): EmailTemplate {
     const daysUntilEvent = Math.ceil((new Date(booking.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     const urgency = daysUntilEvent <= 7 ? 'URGENT' : daysUntilEvent <= 14 ? 'Important' : 'Reminder';
     
@@ -336,7 +336,7 @@ export class EmailService {
     return { subject, html, text };
   }
 
-  private generateInvoiceTemplate(booking: Booking, invoice: Invoice): EmailTemplate {
+  private generateInvoiceTemplate(booking: IBooking, invoice: IInvoice): EmailTemplate {
     const subject = `Invoice #${invoice.invoiceNumber} - ${booking.serviceType}`;
     
     const html = `
@@ -418,7 +418,7 @@ export class EmailService {
     return { subject, html, text };
   }
 
-  private generateStatusUpdateTemplate(booking: Booking, status: string): EmailTemplate {
+  private generateStatusUpdateTemplate(booking: IBooking, status: string): EmailTemplate {
     const statusMessages = {
       'approved': 'Your booking has been approved!',
       'rejected': 'Your booking has been rejected.',

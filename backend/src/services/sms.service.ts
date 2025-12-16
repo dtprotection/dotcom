@@ -1,5 +1,5 @@
-import { Booking } from '../models/booking.model';
-import { Invoice } from '../models/invoice.model';
+import { Booking, IBooking } from '../models/booking.model';
+import { Invoice, IInvoice } from '../models/invoice.model';
 
 export interface SMSConfig {
   provider: 'twilio' | 'vonage';
@@ -97,7 +97,7 @@ export class SMSService {
     return response.ok;
   }
 
-  async sendBookingConfirmation(booking: Booking): Promise<boolean> {
+  async sendBookingConfirmation(booking: IBooking): Promise<boolean> {
     const message = this.templates.bookingConfirmation
       .replace('{name}', booking.clientName)
       .replace('{service}', booking.serviceType)
@@ -112,7 +112,7 @@ export class SMSService {
     });
   }
 
-  async sendPaymentReminder(booking: Booking, invoice?: Invoice): Promise<boolean> {
+  async sendPaymentReminder(booking: IBooking, invoice?: IInvoice): Promise<boolean> {
     const daysUntilEvent = Math.ceil((new Date(booking.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     const remaining = (booking.payment?.totalAmount || 0) - (booking.payment?.paidAmount || 0);
     
@@ -132,7 +132,7 @@ export class SMSService {
     });
   }
 
-  async sendStatusUpdate(booking: Booking, status: string): Promise<boolean> {
+  async sendStatusUpdate(booking: IBooking, status: string): Promise<boolean> {
     const message = this.templates.statusUpdate
       .replace('{name}', booking.clientName)
       .replace('{service}', booking.serviceType)
@@ -145,7 +145,7 @@ export class SMSService {
     });
   }
 
-  async sendUrgentReminder(booking: Booking): Promise<boolean> {
+  async sendUrgentReminder(booking: IBooking): Promise<boolean> {
     const daysUntilEvent = Math.ceil((new Date(booking.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     
     const message = this.templates.urgentReminder

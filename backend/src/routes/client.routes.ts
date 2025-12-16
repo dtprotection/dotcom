@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid booking ID' })
     }
 
-    if (booking.clientEmail !== email) {
+    if (booking.email !== email) {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { 
         clientId: booking._id.toString(),
-        email: booking.clientEmail,
+        email: booking.email,
         type: 'client'
       },
       process.env.JWT_SECRET!,
@@ -75,7 +75,7 @@ router.post('/login', async (req, res) => {
       client: {
         id: booking._id.toString(),
         name: booking.clientName,
-        email: booking.clientEmail
+        email: booking.email
       }
     })
   } catch (error) {
@@ -90,7 +90,7 @@ router.get('/profile', authenticateClient, async (req, res) => {
     const { email } = req.client
 
     // Get client's bookings
-    const bookings = await Booking.find({ clientEmail: email })
+    const bookings = await Booking.find({ email })
     
     // Calculate statistics
     const activeBookings = bookings.filter(b => 
@@ -102,7 +102,7 @@ router.get('/profile', authenticateClient, async (req, res) => {
     // Get total spent from completed bookings
     const totalSpent = bookings
       .filter(b => b.status === 'completed')
-      .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+      .reduce((sum, b) => sum + (b.payment?.totalAmount || 0), 0)
 
     // Get communication preferences from most recent booking
     const latestBooking = bookings.sort((a, b) => 
@@ -113,7 +113,7 @@ router.get('/profile', authenticateClient, async (req, res) => {
       id: req.client.id,
       name: latestBooking?.clientName || 'Unknown',
       email: email,
-      phone: latestBooking?.clientPhone || '',
+      phone: latestBooking?.phone || '',
       activeBookings,
       totalBookings,
       totalSpent,
@@ -149,7 +149,7 @@ router.put('/preferences', authenticateClient, async (req, res) => {
 
     // Update all client's bookings with new preferences
     await Booking.updateMany(
-      { clientEmail: email },
+      { email },
       { communicationPreferences }
     )
 
@@ -169,7 +169,7 @@ router.get('/bookings', authenticateClient, async (req, res) => {
     const { email } = req.client
     const { status, page = 1, limit = 10 } = req.query
 
-    const query: any = { clientEmail: email }
+    const query: any = { email }
     
     if (status && status !== 'all') {
       query.status = status
@@ -228,7 +228,7 @@ router.get('/invoices', authenticateClient, async (req, res) => {
     const { status, page = 1, limit = 10 } = req.query
 
     // Get client's booking IDs
-    const bookings = await Booking.find({ clientEmail: email })
+    const bookings = await Booking.find({ email })
     const bookingIds = bookings.map(b => b._id)
 
     const query: any = { bookingId: { $in: bookingIds } }
@@ -268,7 +268,7 @@ router.get('/invoices/:id', authenticateClient, async (req, res) => {
     const { email } = req.client
 
     // Get client's booking IDs
-    const bookings = await Booking.find({ clientEmail: email })
+    const bookings = await Booking.find({ email })
     const bookingIds = bookings.map(b => b._id)
 
     const invoice = await Invoice.findOne({
@@ -336,7 +336,7 @@ router.get('/statistics', authenticateClient, async (req, res) => {
     const { email } = req.client
 
     // Get all client bookings
-    const bookings = await Booking.find({ clientEmail: email })
+    const bookings = await Booking.find({ email })
     
     // Get all client invoices
     const bookingIds = bookings.map(b => b._id)
@@ -345,10 +345,10 @@ router.get('/statistics', authenticateClient, async (req, res) => {
     // Calculate booking statistics
     const bookingStats = {
       total: bookings.length,
-      confirmed: bookings.filter(b => b.status === 'confirmed').length,
+      approved: bookings.filter(b => b.status === 'approved').length,
       pending: bookings.filter(b => b.status === 'pending').length,
       completed: bookings.filter(b => b.status === 'completed').length,
-      cancelled: bookings.filter(b => b.status === 'cancelled').length,
+      rejected: bookings.filter(b => b.status === 'rejected').length,
       upcoming: bookings.filter(b => new Date(b.date) > new Date()).length
     }
 
@@ -356,13 +356,13 @@ router.get('/statistics', authenticateClient, async (req, res) => {
     const paymentStats = {
       totalInvoices: invoices.length,
       paidInvoices: invoices.filter(i => i.status === 'paid').length,
-      pendingInvoices: invoices.filter(i => i.status === 'pending').length,
+      pendingInvoices: invoices.filter(i => i.status === 'sent').length,
       overdueInvoices: invoices.filter(i => 
-        i.status === 'pending' && new Date(i.dueDate) < new Date()
+        i.status === 'sent' && new Date(i.dueDate) < new Date()
       ).length,
       totalPaid: invoices.filter(i => i.status === 'paid')
         .reduce((sum, inv) => sum + (inv.amount || 0), 0),
-      totalPending: invoices.filter(i => i.status === 'pending')
+      totalPending: invoices.filter(i => i.status === 'sent')
         .reduce((sum, inv) => sum + (inv.amount || 0), 0)
     }
 

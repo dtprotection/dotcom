@@ -2,17 +2,25 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Admin } from '../models/admin.model';
 
-// Extend Request interface to include admin user
+// Extend Request interface to include admin user and client
 declare global {
   namespace Express {
     interface Request {
       admin?: any;
+      client?: {
+        id: string;
+        email: string;
+      };
     }
   }
 }
 
 export interface AuthRequest extends Request {
   admin?: any;
+  client?: {
+    id: string;
+    email: string;
+  };
 }
 
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
