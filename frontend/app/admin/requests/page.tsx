@@ -104,7 +104,7 @@ export default function AdminRequests() {
       if (response.ok) {
         // Update local state
         setBookings(bookings.map(booking =>
-          booking._id === bookingId ? { ...booking, status } : booking
+          booking._id === bookingId ? { ...booking, status: status as Booking['status'] } : booking
         ))
       }
     } catch (error) {
