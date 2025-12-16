@@ -1,9 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { 
-  Mail, MessageSquare, Send, Users, Calendar, DollarSign, 
-  CheckCircle, AlertCircle, Clock, Phone, Eye, Settings,
-  Plus, Search, Filter, Download, RefreshCw
+  Mail, MessageSquare, Send, Users, Eye, Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 
 interface Booking {
   _id: string
@@ -64,8 +61,11 @@ export default function AdminCommunication() {
 
   useEffect(() => {
     fetchBookings()
-    fetchStats()
   }, [])
+
+  useEffect(() => {
+    fetchStats()
+  }, [bookings])
 
   const fetchBookings = async () => {
     try {
@@ -95,7 +95,6 @@ export default function AdminCommunication() {
         }
       })
       if (response.ok) {
-        const data = await response.json()
         // Calculate communication stats from bookings
         const emailEnabled = bookings.filter(b => b.communicationPreferences.emailNotifications).length
         const smsEnabled = bookings.filter(b => b.communicationPreferences.smsNotifications).length

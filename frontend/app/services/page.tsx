@@ -143,15 +143,15 @@ export default function ServicesPage() {
               </p>
               <p>
                 Our services go beyond simply having a presence—we plan, prepare, and execute strategic security
-                measures designed to prevent threats before they happen. Whether you're hosting a large event, managing
+                measures designed to prevent threats before they happen. Whether you&apos;re hosting a large event, managing
                 a high-profile client, protecting your business assets, or ensuring the safety of your nightlife venue,
                 D & T has the experience and professionalism to get it done right.
               </p>
               <div className="text-center text-xl font-semibold text-amber-600">
                 <p>
-                  <strong>"Down and tight, we get it done right!"</strong>
+                  <strong>&quot;Down and tight, we get it done right!&quot;</strong>
                 </p>
-                <p>isn't just a slogan—it's the standard we live by.</p>
+                <p>isn&apos;t just a slogan—it&apos;s the standard we live by.</p>
               </div>
             </div>
           </div>

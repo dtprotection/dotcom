@@ -20,7 +20,7 @@ export default function AboutPage() {
               </h1>
               <p className="text-xl text-muted-foreground">
                 Born from experience <strong>D&T Executive Protection</strong> was founded to provide high-level
-                security with a personal touch. Whether it's a private event or VIP Protection, we're here to keep you
+                security with a personal touch. Whether it&apos;s a private event or VIP Protection, we&apos;re here to keep you
                 safe while ensuring peace of mind. Our team blends professionalism, discretion, and approachability -
                 because security should make you feel protected, not pressured.
               </p>
@@ -44,9 +44,9 @@ export default function AboutPage() {
               </p>
               <p>
                 What started as a few small event contracts has grown into a trusted name for event security and
-                executive protection. With every job - whether it's a wedding, a high-profile function, or a private
+                executive protection. With every job - whether it&apos;s a wedding, a high-profile function, or a private
                 gathering - D&T brings calm, control, and a reassuring presence.{" "}
-                <strong>We don't just show up in uniform; we show up with purpose.</strong>
+                <strong>We don&apos;t just show up in uniform; we show up with purpose.</strong>
               </p>
             </div>
           </div>

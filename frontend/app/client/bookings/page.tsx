@@ -5,17 +5,15 @@ import { useRouter } from "next/navigation"
 import { 
   Calendar, 
   Search, 
-  Filter, 
   Clock, 
   CheckCircle, 
   XCircle,
   AlertCircle,
   DollarSign,
-  MapPin,
-  User
+  MapPin
 } from "lucide-react"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -80,7 +78,7 @@ export default function ClientBookings() {
       } else {
         setError("Failed to load bookings")
       }
-    } catch (error) {
+    } catch {
       setError("Network error")
     } finally {
       setIsLoading(false)

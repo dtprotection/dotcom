@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation"
 import { 
   CreditCard, 
   Search, 
-  Filter, 
   Clock, 
   CheckCircle, 
   XCircle,
   AlertCircle,
   DollarSign,
   Calendar,
-  Download,
   Eye
 } from "lucide-react"
 
@@ -57,6 +55,7 @@ export default function ClientPayments() {
 
   useEffect(() => {
     filterInvoices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoices, searchTerm, statusFilter])
 
   const fetchInvoices = async (token: string) => {
@@ -72,7 +71,7 @@ export default function ClientPayments() {
       } else {
         setError("Failed to load invoices")
       }
-    } catch (error) {
+    } catch {
       setError("Network error")
     } finally {
       setIsLoading(false)
