@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { 
-  Settings, 
   Bell, 
   Mail, 
   MessageSquare, 
@@ -68,7 +67,7 @@ export default function ClientSettings() {
       } else {
         setError("Failed to load client data")
       }
-    } catch (error) {
+    } catch {
       setError("Network error")
     } finally {
       setIsLoading(false)
@@ -109,7 +108,7 @@ export default function ClientSettings() {
         const data = await response.json()
         setError(data.error || "Failed to update preferences")
       }
-    } catch (error) {
+    } catch {
       setError("Network error")
     } finally {
       setIsSaving(false)
@@ -265,7 +264,7 @@ export default function ClientSettings() {
               Communication Preferences
             </CardTitle>
             <CardDescription>
-              Choose how you'd like to receive notifications and updates
+              Choose how you&apos;d like to receive notifications and updates
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

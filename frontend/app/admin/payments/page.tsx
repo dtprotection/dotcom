@@ -1,13 +1,12 @@
 "use client"
 import { useState, useEffect } from "react"
 import { 
-  CreditCard, DollarSign, Calendar, User, Mail, Phone, CheckCircle, Clock, AlertCircle,
-  Plus, Send, Eye, Download
+  CreditCard, DollarSign, CheckCircle, Clock, AlertCircle,
+  Plus, Send, Eye
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Payment {
@@ -41,7 +40,6 @@ export default function AdminPayments() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [showCreateInvoice, setShowCreateInvoice] = useState(false)
   const [createInvoiceData, setCreateInvoiceData] = useState({
     bookingId: '', totalAmount: '', depositAmount: '', serviceType: '', date: ''

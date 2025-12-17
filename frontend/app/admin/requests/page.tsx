@@ -3,13 +3,10 @@
 import { useState, useEffect } from "react"
 import { 
   Search, 
-  Filter, 
   Eye, 
   CheckCircle, 
   XCircle,
-  Clock,
   Calendar,
-  DollarSign,
   User,
   Phone,
   Mail
@@ -49,6 +46,7 @@ export default function AdminRequests() {
 
   useEffect(() => {
     filterBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookings, searchTerm, statusFilter])
 
   const fetchBookings = async () => {
@@ -106,7 +104,7 @@ export default function AdminRequests() {
       if (response.ok) {
         // Update local state
         setBookings(bookings.map(booking =>
-          booking._id === bookingId ? { ...booking, status: status as any } : booking
+          booking._id === bookingId ? { ...booking, status: status as Booking['status'] } : booking
         ))
       }
     } catch (error) {

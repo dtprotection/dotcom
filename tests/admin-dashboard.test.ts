@@ -358,14 +358,16 @@ describe('Admin Dashboard - Analytics & Statistics', () => {
     })
 
     it('should format dates correctly', () => {
-      const date = new Date('2024-12-25')
+      // Use a date that won't have timezone issues
+      const date = new Date('2024-12-25T12:00:00Z')
       const formatted = date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
+        timeZone: 'UTC'
       })
 
-      expect(formatted).toBe('December 24, 2024')
+      expect(formatted).toBe('December 25, 2024')
     })
 
     it('should calculate time differences', () => {

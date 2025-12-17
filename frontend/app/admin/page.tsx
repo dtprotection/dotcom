@@ -6,9 +6,6 @@ import {
   CreditCard, 
   Clock, 
   CheckCircle, 
-  XCircle,
-  TrendingUp,
-  AlertCircle,
   Calendar
 } from "lucide-react"
 import { Button } from "@/components/ui/button"

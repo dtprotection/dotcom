@@ -7,13 +7,10 @@ import {
   Calendar, 
   CreditCard, 
   MessageSquare, 
-  TrendingUp, 
   Clock, 
-  CheckCircle,
-  AlertCircle,
   DollarSign,
-  User,
-  Settings
+  Settings,
+  AlertCircle
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -99,7 +96,7 @@ export default function ClientDashboard() {
         const invoicesData = await invoicesRes.json()
         setRecentInvoices(invoicesData.invoices || [])
       }
-    } catch (error) {
+    } catch {
       setError("Failed to load client data")
     } finally {
       setIsLoading(false)
@@ -206,7 +203,7 @@ export default function ClientDashboard() {
             Welcome back, {clientData?.name || 'Client'}
           </h1>
           <p className="text-gray-600">
-            Here's what's happening with your bookings and payments
+            Here&apos;s what&apos;s happening with your bookings and payments
           </p>
         </div>
         <Link href="/client/settings">

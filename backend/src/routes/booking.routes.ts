@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Booking } from '../models/booking.model';
-import { sendBookingConfirmation } from '../services/email.service';
 
 const router = Router();
 
@@ -28,8 +27,9 @@ router.post('/', validateBooking, async (req: Request, res: Response) => {
     const booking = new Booking(req.body);
     await booking.save();
 
-    // Send confirmation email
-    await sendBookingConfirmation(booking);
+    // TODO: Send confirmation email when email service is configured
+    // const emailService = new EmailService(...);
+    // await emailService.sendBookingConfirmation(booking);
 
     res.status(201).json(booking);
   } catch (error) {

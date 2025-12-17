@@ -39,37 +39,39 @@ const mockClient = {
 const mockBookings = [
   {
     id: 'booking1',
+    _id: 'booking1',
     clientName: 'John Doe',
-    clientEmail: 'john@example.com',
-    clientPhone: '+1234567890',
+    email: 'john@example.com',
+    phone: '+1234567890',
     serviceType: 'personal_protection',
     date: new Date('2024-01-15'),
-    startTime: '09:00',
-    endTime: '17:00',
-    status: 'confirmed',
-    totalAmount: 800.00,
-    depositAmount: 200.00,
-    depositPaid: true,
-    finalPaymentPaid: false,
-    adminNotes: 'Client requested specific security protocols',
+    status: 'approved',
+    payment: {
+      totalAmount: 800.00,
+      depositAmount: 200.00,
+      paidAmount: 200.00,
+      status: 'partial',
+      method: 'paypal' as const
+    },
     createdAt: new Date('2024-01-10'),
     updatedAt: new Date('2024-01-12')
   },
   {
     id: 'booking2',
+    _id: 'booking2',
     clientName: 'John Doe',
-    clientEmail: 'john@example.com',
-    clientPhone: '+1234567890',
+    email: 'john@example.com',
+    phone: '+1234567890',
     serviceType: 'event_security',
     date: new Date('2024-02-20'),
-    startTime: '18:00',
-    endTime: '02:00',
     status: 'pending',
-    totalAmount: 1200.00,
-    depositAmount: 300.00,
-    depositPaid: false,
-    finalPaymentPaid: false,
-    adminNotes: 'Large event, requires additional personnel',
+    payment: {
+      totalAmount: 1200.00,
+      depositAmount: 300.00,
+      paidAmount: 0,
+      status: 'pending',
+      method: 'paypal' as const
+    },
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15')
   }
@@ -78,23 +80,23 @@ const mockBookings = [
 const mockInvoices = [
   {
     id: 'invoice1',
+    _id: 'invoice1',
     bookingId: 'booking1',
-    clientEmail: 'john@example.com',
     amount: 800.00,
     status: 'paid',
-    dueDate: new Date('2024-01-20'),
-    paidAt: new Date('2024-01-18'),
+    dueDate: new Date('2025-12-25'), // Future date to avoid overdue
+    paidDate: new Date('2024-01-18'),
     paypalInvoiceId: 'INV-123456',
     createdAt: new Date('2024-01-10')
   },
   {
     id: 'invoice2',
+    _id: 'invoice2',
     bookingId: 'booking2',
-    clientEmail: 'john@example.com',
     amount: 1200.00,
-    status: 'pending',
-    dueDate: new Date('2024-12-25'), // Future date to avoid overdue
-    paidAt: null,
+    status: 'sent',
+    dueDate: new Date('2025-12-25'), // Future date to avoid overdue
+    paidDate: undefined,
     paypalInvoiceId: 'INV-123457',
     createdAt: new Date('2024-01-15')
   }
@@ -103,7 +105,7 @@ const mockInvoices = [
 const mockMessages = [
   {
     id: 'msg1',
-    clientEmail: 'john@example.com',
+    email: 'john@example.com',
     type: 'email',
     subject: 'Booking Confirmation',
     content: 'Your booking has been confirmed for January 15th.',
@@ -113,7 +115,7 @@ const mockMessages = [
   },
   {
     id: 'msg2',
-    clientEmail: 'john@example.com',
+    email: 'john@example.com',
     type: 'sms',
     subject: 'Payment Reminder',
     content: 'Reminder: Your deposit payment of $300 is due.',
@@ -128,7 +130,7 @@ const clientPortalService = {
   // Authentication
   validateClientCredentials: vi.fn((email: string, bookingId: string) => {
     const booking = mockBookings.find(b => b.id === bookingId)
-    return booking && booking.clientEmail === email
+    return booking ? booking.email === email : false
   }),
 
   generateClientToken: vi.fn((clientId: string) => {
@@ -154,27 +156,31 @@ const clientPortalService = {
 
   // Booking Management
   getClientBookings: vi.fn((clientEmail: string) => {
-    return Promise.resolve(mockBookings.filter(b => b.clientEmail === clientEmail))
+    return Promise.resolve(mockBookings.filter(b => b.email === clientEmail))
   }),
 
   getBookingById: vi.fn((bookingId: string, clientEmail: string) => {
-    const booking = mockBookings.find(b => b.id === bookingId && b.clientEmail === clientEmail)
+    const booking = mockBookings.find(b => b.id === bookingId && b.email === clientEmail)
     return Promise.resolve(booking || null)
   }),
 
   // Payment Management
   getClientInvoices: vi.fn((clientEmail: string) => {
-    return Promise.resolve(mockInvoices.filter(i => i.clientEmail === clientEmail))
+    // Get invoices for bookings belonging to this client
+    const clientBookingIds = mockBookings.filter(b => b.email === clientEmail).map(b => b.id)
+    return Promise.resolve(mockInvoices.filter(i => clientBookingIds.includes(i.bookingId)))
   }),
 
   getInvoiceById: vi.fn((invoiceId: string, clientEmail: string) => {
-    const invoice = mockInvoices.find(i => i.id === invoiceId && i.clientEmail === clientEmail)
-    return Promise.resolve(invoice || null)
+    const invoice = mockInvoices.find(i => i.id === invoiceId)
+    if (!invoice) return Promise.resolve(null)
+    const booking = mockBookings.find(b => b.id === invoice.bookingId && b.email === clientEmail)
+    return Promise.resolve(booking ? invoice : null)
   }),
 
   // Communication Management
   getClientMessages: vi.fn((clientEmail: string) => {
-    return Promise.resolve(mockMessages.filter(m => m.clientEmail === clientEmail))
+    return Promise.resolve(mockMessages.filter(m => m.email === clientEmail))
   }),
 
   markMessageAsRead: vi.fn((messageId: string) => {
@@ -264,10 +270,10 @@ describe('Client Portal - Core Functionality', () => {
     it('should calculate client statistics', () => {
       const stats = {
         totalBookings: mockBookings.length,
-        activeBookings: mockBookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length,
+        activeBookings: mockBookings.filter(b => b.status === 'approved' || b.status === 'pending').length,
         completedBookings: mockBookings.filter(b => b.status === 'completed').length,
         totalSpent: mockInvoices.filter(i => i.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0),
-        averageBookingValue: mockBookings.reduce((sum, b) => sum + b.totalAmount, 0) / mockBookings.length
+        averageBookingValue: mockBookings.reduce((sum, b) => sum + (b.payment?.totalAmount || 0), 0) / mockBookings.length
       }
 
       expect(stats.totalBookings).toBe(2)
@@ -318,10 +324,10 @@ describe('Client Portal - Core Functionality', () => {
       }
 
       expect(bookingStats.total).toBe(2)
-      expect(bookingStats.confirmed).toBe(1)
+      expect(bookingStats.approved).toBe(1)
       expect(bookingStats.pending).toBe(1)
       expect(bookingStats.completed).toBe(0)
-      expect(bookingStats.cancelled).toBe(0)
+      expect(bookingStats.rejected).toBe(0)
       expect(bookingStats.upcoming).toBe(2) // Both dates are in the future
     })
 
@@ -329,12 +335,12 @@ describe('Client Portal - Core Functionality', () => {
       const booking = mockBookings[0]
 
       expect(booking.clientName).toBe('John Doe')
-      expect(booking.clientEmail).toBe('john@example.com')
+      expect(booking.email).toBe('john@example.com')
       expect(booking.serviceType).toBe('personal_protection')
-      expect(booking.totalAmount).toBe(800.00)
-      expect(booking.depositAmount).toBe(200.00)
-      expect(booking.depositPaid).toBe(true)
-      expect(booking.finalPaymentPaid).toBe(false)
+      expect(booking.payment?.totalAmount).toBe(800.00)
+      expect(booking.payment?.depositAmount).toBe(200.00)
+      expect(booking.payment?.paidAmount).toBe(200.00)
+      expect(booking.payment?.status).toBe('partial')
     })
 
     it('should get booking by ID with client validation', async () => {
@@ -353,7 +359,7 @@ describe('Client Portal - Core Functionality', () => {
 
       expect(clientInvoices).toHaveLength(2)
       expect(clientInvoices[0].status).toBe('paid')
-      expect(clientInvoices[1].status).toBe('pending')
+      expect(clientInvoices[1].status).toBe('sent')
     })
 
     it('should calculate payment statistics', () => {
@@ -361,20 +367,20 @@ describe('Client Portal - Core Functionality', () => {
       const paymentStats = {
         totalInvoices: mockInvoices.length,
         paidInvoices: mockInvoices.filter(i => i.status === 'paid').length,
-        pendingInvoices: mockInvoices.filter(i => i.status === 'pending').length,
+        pendingInvoices: mockInvoices.filter(i => i.status === 'sent').length,
         overdueInvoices: mockInvoices.filter(i => 
-          i.status === 'pending' && new Date(i.dueDate) < today
+          i.status === 'sent' && new Date(i.dueDate) < today
         ).length,
         totalPaid: mockInvoices.filter(i => i.status === 'paid')
           .reduce((sum, inv) => sum + inv.amount, 0),
-        totalPending: mockInvoices.filter(i => i.status === 'pending')
+        totalPending: mockInvoices.filter(i => i.status === 'sent')
           .reduce((sum, inv) => sum + inv.amount, 0)
       }
 
       expect(paymentStats.totalInvoices).toBe(2)
       expect(paymentStats.paidInvoices).toBe(1)
       expect(paymentStats.pendingInvoices).toBe(1)
-      expect(paymentStats.overdueInvoices).toBe(0) // Future due date
+      expect(paymentStats.overdueInvoices).toBe(0) // Future due date - invoice status is 'sent', not 'pending'
       expect(paymentStats.totalPaid).toBe(800.00)
       expect(paymentStats.totalPending).toBe(1200.00)
     })
@@ -382,16 +388,18 @@ describe('Client Portal - Core Functionality', () => {
     it('should identify overdue payments', () => {
       const today = new Date()
       const overdueInvoices = mockInvoices.filter(invoice => 
-        invoice.status === 'pending' && new Date(invoice.dueDate) < today
+        invoice.status === 'sent' && new Date(invoice.dueDate) < today
       )
 
+      // Invoice2 has future due date (2024-12-25), so no overdue
       expect(overdueInvoices).toHaveLength(0) // No overdue invoices in test data
     })
 
     it('should calculate payment progress', () => {
       const booking = mockBookings[0]
-      const totalPaid = booking.depositPaid ? booking.depositAmount : 0
-      const progress = (totalPaid / booking.totalAmount) * 100
+      const totalPaid = booking.payment?.paidAmount || 0
+      const totalAmount = booking.payment?.totalAmount || 0
+      const progress = totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0
 
       expect(progress).toBe(25) // 200/800 = 25%
     })
@@ -403,7 +411,7 @@ describe('Client Portal - Core Functionality', () => {
       expect(invoice.amount).toBe(800.00)
       expect(invoice.status).toBe('paid')
       expect(invoice.paypalInvoiceId).toBe('INV-123456')
-      expect(invoice.paidAt).toBeInstanceOf(Date)
+      expect(invoice.paidDate).toBeInstanceOf(Date)
     })
 
     it('should get invoice by ID with client validation', async () => {
@@ -518,8 +526,11 @@ describe('Client Portal - Core Functionality', () => {
       ]
 
       const isValidPhone = (phone: string) => {
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$|^[\+]?[\(]?[1-9][\d]{2}[\)]?[\s\-]?[\d]{3}[\s\-]?[\d]{4}$/
-        return phoneRegex.test(phone.replace(/[\s\-\(\)\.]/g, ''))
+        // Remove formatting characters
+        const cleaned = phone.replace(/[\s\-\(\)\.]/g, '')
+        // Must have at least 10 digits and start with valid country code or area code
+        const phoneRegex = /^[\+]?[1-9][\d]{9,14}$/
+        return phoneRegex.test(cleaned) && cleaned.length >= 10
       }
 
       validPhones.forEach(phone => {
@@ -628,7 +639,7 @@ describe('Client Portal - Core Functionality', () => {
       
       const canAccessBooking = (email: string, bookingId: string) => {
         const booking = mockBookings.find(b => b.id === bookingId)
-        return booking && booking.clientEmail === email
+        return booking ? booking.email === email : false
       }
 
       expect(canAccessBooking(clientEmail, bookingId)).toBe(true)

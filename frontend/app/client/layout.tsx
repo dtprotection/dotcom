@@ -13,7 +13,6 @@ import {
   Menu,
   X,
   User,
-  Bell
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -51,6 +50,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     }
 
     fetchClientData(token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, pathname])
 
   const fetchClientData = async (token: string) => {

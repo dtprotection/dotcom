@@ -45,7 +45,7 @@ export default function ClientLogin() {
       } else {
         setError(data.error || "Login failed")
       }
-    } catch (error) {
+    } catch {
       setError("Network error. Please try again.")
     } finally {
       setIsLoading(false)
@@ -165,7 +165,7 @@ export default function ClientLogin() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have a booking ID?{" "}
+                Don&apos;t have a booking ID?{" "}
                 <Link 
                   href="/services" 
                   className="text-amber-600 hover:text-amber-700 font-medium"

@@ -30,7 +30,7 @@ export default function BookingForm() {
         <CheckCircle className="h-12 w-12 text-amber-500" />
         <h3 className="mt-4 text-2xl font-bold">Booking Received</h3>
         <p className="mt-2 text-muted-foreground">
-          Thank you for your booking request. We'll contact you shortly to confirm your appointment.
+          Thank you for your booking request. We&apos;ll contact you shortly to confirm your appointment.
         </p>
         <Button onClick={() => setIsSubmitted(false)} className="mt-6 bg-amber-500 hover:bg-amber-600 text-black">
           Book Another Appointment

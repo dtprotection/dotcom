@@ -15,6 +15,7 @@ export interface IAdmin extends Document {
   // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;
   generateAuthToken(): string;
+  updateLastLogin(): Promise<void>;
 }
 
 const adminSchema = new Schema<IAdmin>({
@@ -82,11 +83,15 @@ adminSchema.methods.generateAuthToken = function(): string {
     role: this.role
   };
   
-  return jwt.sign(
-    payload,
-    process.env.JWT_SECRET || 'fallback-secret-key',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
-  );
+  const secret = process.env.JWT_SECRET || 'fallback-secret-key';
+  const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
+  return jwt.sign(payload, secret, { expiresIn } as jwt.SignOptions);
+};
+
+// Update last login
+adminSchema.methods.updateLastLogin = async function(): Promise<void> {
+  this.lastLogin = new Date();
+  await this.save();
 };
 
 // Update last login

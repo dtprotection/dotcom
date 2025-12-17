@@ -60,8 +60,8 @@ router.get('/overview', async (req: Request, res: Response) => {
         $group: {
           _id: null,
           totalBookings: { $sum: 1 },
-          depositsPaid: { $sum: { $cond: ['$depositPaid', 1, 0] } },
-          finalPaymentsPaid: { $sum: { $cond: ['$finalPaymentPaid', 1, 0] } }
+          depositsPaid: { $sum: { $cond: [{ $gte: ['$payment.paidAmount', '$payment.depositAmount'] }, 1, 0] } },
+          finalPaymentsPaid: { $sum: { $cond: [{ $eq: ['$payment.status', 'paid'] }, 1, 0] } }
         }
       }
     ])
@@ -117,7 +117,7 @@ router.get('/analytics/revenue', async (req: Request, res: Response) => {
       {
         $group: {
           _id: groupBy,
-          revenue: { $sum: '$totalAmount' },
+          revenue: { $sum: '$payment.totalAmount' },
           count: { $sum: 1 }
         }
       },
@@ -196,8 +196,8 @@ router.get('/bookings', async (req: Request, res: Response) => {
     if (search) {
       query.$or = [
         { clientName: { $regex: search, $options: 'i' } },
-        { clientEmail: { $regex: search, $options: 'i' } },
-        { clientPhone: { $regex: search, $options: 'i' } }
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } }
       ]
     }
 
@@ -306,7 +306,7 @@ router.get('/invoices', async (req: Request, res: Response) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit))
-      .populate('bookingId', 'clientName clientEmail serviceType')
+      .populate('bookingId', 'clientName email serviceType')
       .select('-__v')
 
     const total = await Invoice.countDocuments(query)
@@ -544,18 +544,18 @@ router.get('/export/bookings', async (req: Request, res: Response) => {
 
       const csvData = bookings.map(booking => [
         booking.clientName,
-        booking.clientEmail,
-        booking.clientPhone,
+        booking.clientName,
+        booking.email,
+        booking.phone,
         booking.serviceType,
-        booking.eventDate,
-        booking.duration,
-        booking.numberOfGuards,
-        booking.location,
+        booking.date,
+        booking.numberOfGuards || '',
+        booking.venueAddress || '',
         booking.status,
-        booking.totalAmount,
-        booking.depositAmount,
-        booking.depositPaid,
-        booking.finalPaymentPaid,
+        booking.payment?.totalAmount || 0,
+        booking.payment?.depositAmount || 0,
+        booking.payment?.paidAmount || 0,
+        booking.payment?.status || 'pending',
         booking.createdAt
       ])
 
@@ -592,8 +592,8 @@ router.get('/analytics/performance', async (req: Request, res: Response) => {
         $group: {
           _id: '$serviceType',
           count: { $sum: 1 },
-          avgAmount: { $avg: '$totalAmount' },
-          totalRevenue: { $sum: '$totalAmount' }
+          avgAmount: { $avg: '$payment.totalAmount' },
+          totalRevenue: { $sum: '$payment.totalAmount' }
         }
       },
       {
@@ -636,8 +636,8 @@ router.get('/analytics/performance', async (req: Request, res: Response) => {
         $group: {
           _id: null,
           totalBookings: { $sum: 1 },
-          depositsPaid: { $sum: { $cond: ['$depositPaid', 1, 0] } },
-          finalPaymentsPaid: { $sum: { $cond: ['$finalPaymentPaid', 1, 0] } },
+          depositsPaid: { $sum: { $cond: [{ $gte: ['$payment.paidAmount', '$payment.depositAmount'] }, 1, 0] } },
+          finalPaymentsPaid: { $sum: { $cond: [{ $eq: ['$payment.status', 'paid'] }, 1, 0] } },
           totalRevenue: { $sum: '$totalAmount' }
         }
       }

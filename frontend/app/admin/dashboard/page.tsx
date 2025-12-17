@@ -7,18 +7,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   BarChart3, 
-  Users, 
   DollarSign, 
   Calendar, 
-  TrendingUp, 
   FileText,
   Search,
-  Filter,
   Download,
-  RefreshCw
+  RefreshCw,
+  TrendingUp
 } from 'lucide-react'
 
 interface DashboardStats {
@@ -91,9 +88,9 @@ export default function AdminDashboard() {
 
       setStats({
         totalBookings: overviewData.data.totalBookings,
-        totalRevenue: overviewData.data.revenueByStatus.reduce((sum: number, item: any) => sum + item.total, 0),
-        pendingBookings: overviewData.data.bookingStatuses.find((s: any) => s.status === 'pending')?.count || 0,
-        completedBookings: overviewData.data.bookingStatuses.find((s: any) => s.status === 'completed')?.count || 0,
+        totalRevenue: overviewData.data.revenueByStatus.reduce((sum: number, item: { total: number }) => sum + item.total, 0),
+        pendingBookings: overviewData.data.bookingStatuses.find((s: { status: string; count: number }) => s.status === 'pending')?.count || 0,
+        completedBookings: overviewData.data.bookingStatuses.find((s: { status: string; count: number }) => s.status === 'completed')?.count || 0,
         depositCollectionRate: overviewData.data.depositCollectionRate,
         finalPaymentRate: overviewData.data.finalPaymentRate
       })

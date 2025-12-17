@@ -72,7 +72,8 @@ const invoiceSchema = new Schema<IInvoice>({
 // Generate invoice number
 invoiceSchema.pre('save', async function(next) {
   if (this.isNew && !this.invoiceNumber) {
-    const count = await this.constructor.countDocuments();
+    const InvoiceModel = this.constructor as typeof Invoice;
+    const count = await InvoiceModel.countDocuments();
     this.invoiceNumber = `INV-${String(count + 1).padStart(6, '0')}`;
   }
   next();

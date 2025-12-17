@@ -1,0 +1,169 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '18.x'
+  HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+
+jobs:
+  # Lint and type check
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Type check backend
+        run: npx tsc -p tsconfig.backend.json --noEmit
+
+      - name: Type check frontend
+        run: cd frontend && npx tsc --noEmit
+
+  # Run tests
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MONGODB_URI: mongodb://localhost:27017/dtprotection-test
+      JWT_SECRET: test-secret-key-for-ci
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        run: cd tests && npm ci
+
+      - name: Run tests
+        run: cd tests && npm run test:run
+        continue-on-error: false
+        env:
+          # Mark optional services as unavailable for CI
+          # Tests will skip PayPal/Email tests if these aren't set
+          PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID || '' }}
+          PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET || '' }}
+          EMAIL_PROVIDER: ${{ secrets.EMAIL_PROVIDER || '' }}
+          SKIP_OPTIONAL_SERVICE_TESTS: 'true'  # Allow tests to skip optional service tests
+
+      - name: Generate test coverage
+        run: cd tests && npm run test:coverage
+        continue-on-error: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./tests/coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Build application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Build backend
+        run: npm run build:backend
+
+      - name: Build frontend
+        run: npm run build:frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:3000' }}
+
+      - name: Verify build artifacts
+        run: |
+          test -d frontend/.next || (echo "Frontend build failed" && exit 1)
+          test -d backend/dist || (echo "Backend build failed" && exit 1)
+
+  # Deploy to Heroku (only on main branch)
+  deploy:
+    name: Deploy to Heroku
+    runs-on: ubuntu-latest
+    needs: [lint, test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Heroku CLI
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          appdir: "."
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          appdir: "."
+          procfile: "web: npm start"
+
+      - name: Run post-deployment checks
+        run: |
+          echo "Deployment completed. Run health checks if needed."
+          # Add health check endpoint verification here if available
+
