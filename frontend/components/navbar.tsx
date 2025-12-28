@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -22,7 +23,13 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-amber-500">LOGO</span>
+            <Image 
+              src="/dt_logo.PNG" 
+              alt="D&T Executive Protection" 
+              width={120} 
+              height={40}
+              className="h-10 w-auto"
+            />
           </Link>
         </div>
         <nav className="hidden md:flex md:items-center md:gap-6">
